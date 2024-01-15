@@ -23,7 +23,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : 'Internal Server Error';
 
     if (exception.message.includes('E11000 duplicate')) {
-      httpStatus = 409;
+      httpStatus = HttpStatus.CONFLICT;
       const match = exception.message.match(/index: (\w+)_\d+/);
       const fieldName = match ? match[1] : null;
 

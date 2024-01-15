@@ -24,4 +24,8 @@ export class UserService {
     });
     return await user.save({ ...opts });
   }
+
+  public async findOneByEmail(email: string) {
+    return await this.userRepo.findOne({ email });
+  }
 }
