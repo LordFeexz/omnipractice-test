@@ -26,4 +26,8 @@ export class FollowService {
     });
     return await follow.save({ ...opts });
   }
+
+  public async getUserFollower(userId: Types.ObjectId) {
+    return await this.followRepo.find({ targetId: userId });
+  }
 }

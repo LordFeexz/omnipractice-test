@@ -61,6 +61,7 @@ export class UserController {
   }
 
   @Patch('/:userId')
+  @HttpCode(201)
   public async followAUser(
     @Param('userId', ParseToUser) user: UserDocument | null,
     @Req() req: Request,

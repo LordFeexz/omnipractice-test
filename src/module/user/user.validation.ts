@@ -4,7 +4,9 @@ import type {
 } from "../../interfaces/user.interfaces";
 import BaseValidation from "../../base/validation.base";
 import * as yup from "yup";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class UserValidation extends BaseValidation {
   public async signupInput(data: any) {
     return await this.validate<SignUpInput>(

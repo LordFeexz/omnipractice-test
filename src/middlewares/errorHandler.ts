@@ -30,6 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (fieldName) message = `${fieldName} is already registered.`;
     }
 
+    if (httpStatus === 500) console.log(exception);
     ctx.getResponse<Response>().status(httpStatus).json({ message });
   }
 }

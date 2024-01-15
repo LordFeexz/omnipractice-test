@@ -26,10 +26,14 @@ export class UserService {
   }
 
   public async findOneByEmail(email: string) {
-    return await this.userRepo.findOne({ email })
+    return await this.userRepo.findOne({ email });
   }
 
   public async findOneById(_id: Types.ObjectId) {
     return await this.userRepo.findById(_id);
+  }
+
+  public async findMultipleByIds(_ids: Types.ObjectId[]) {
+    return await this.userRepo.find({ _id: { $in: _ids } });
   }
 }

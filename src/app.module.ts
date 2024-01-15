@@ -11,6 +11,7 @@ import { config } from 'dotenv';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UrlEncodedParser } from './middlewares/urlEncodedParser';
+import { MessageModule } from './module/message/message.module';
 
 config();
 
@@ -21,6 +22,7 @@ config();
     }),
     UserModule,
     MorganModule,
+    MessageModule
   ],
   controllers: [AppController],
   providers: [
