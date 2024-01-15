@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { type UserDocument } from '../../models/user.schema';
 import type { SignUpInput } from '../../interfaces/user.interfaces';
 import encryption from '../../utils/encryption';
@@ -26,6 +26,10 @@ export class UserService {
   }
 
   public async findOneByEmail(email: string) {
-    return await this.userRepo.findOne({ email });
+    return await this.userRepo.findOne({ email })
+  }
+
+  public async findOneById(_id: Types.ObjectId) {
+    return await this.userRepo.findById(_id);
   }
 }
