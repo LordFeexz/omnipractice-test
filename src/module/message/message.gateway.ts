@@ -12,6 +12,7 @@ import { Types } from 'mongoose';
 import { MessageDocument } from '../../models/message.schema';
 import { config } from 'dotenv';
 import { MessageService } from './message.service';
+import { FollowService } from '../user/follow.service';
 
 config();
 
@@ -22,6 +23,7 @@ export class MessageGateway
   constructor(
     private readonly userService: UserService,
     private readonly messageService: MessageService,
+    private readonly followService:FollowService
   ) {}
 
   afterInit(server: Socket) {
@@ -48,7 +50,7 @@ export class MessageGateway
   }
 
   private async getFriendList(id: Types.ObjectId) {
-    const friendList = await this.messageService.getFriendList(id);
+    const friendList = await this.followService.getFollowersList(id);
     const list = friendList.map((el) => el._id);
 
     return Array.from(this.onlineUser).filter((_id) => list.includes(_id));

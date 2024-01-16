@@ -4,13 +4,15 @@ import { MessageService } from "./message.service";
 import { MessageValidation } from "./message.validation";
 import encryption from "../../utils/encryption";
 import { MessageGateway } from "./message.gateway";
+import { FollowService } from "../user/follow.service";
 
 @Controller("message")
 export class MessageController {
   constructor(
     private readonly messageService: MessageService,
     private readonly messageValidation: MessageValidation,
-    private readonly messageGateway: MessageGateway
+    private readonly messageGateway: MessageGateway,
+    private readonly followService: FollowService
   ) {}
 
   @Post()
@@ -36,8 +38,8 @@ export class MessageController {
   @Get()
   public async getAllMyMessage(@Req() req: Request) {
     const { _id } = req.userCtx._doc;
-    const friendList = await this.messageService.getFriendList(_id);
-
+    const friendList = await this.followService.getFollowersList(_id);
+    console.log(friendList,_id)
     return {
       message: "OK",
       data: await this.messageService.getMessages(

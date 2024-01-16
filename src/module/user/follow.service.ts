@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { FollowDocument } from "../../models/follow.schema";
 import type { DbOpts } from "../../interfaces";
+import type { UserDocument } from "../../models/user.schema";
 
 @Injectable()
 export class FollowService {
@@ -67,6 +68,40 @@ export class FollowService {
         $project: {
           _id: 0,
           messages: 1,
+        },
+      },
+    ]);
+  }
+
+  public async getFollowersList(targetId: Types.ObjectId) {
+    return await this.followRepo.aggregate<UserDocument>([
+      {
+        $match: { targetId },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $group: {
+          _id: "$user._id",
+          user: {
+            $first: "$user",
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          email: "$user.email",
+          username: "$user.username",
+          createdAt: "$user.createdAt",
+          updatedAt: "$user.updatedAt",
         },
       },
     ]);
