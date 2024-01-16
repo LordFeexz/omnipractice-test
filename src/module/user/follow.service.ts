@@ -30,4 +30,45 @@ export class FollowService {
   public async getUserFollower(userId: Types.ObjectId) {
     return await this.followRepo.find({ targetId: userId });
   }
+
+  public async getFollowedMessages(ids: Types.ObjectId[]) {
+    return await this.followRepo.aggregate([
+      {
+        $match: {
+          userId: { $in: [...ids] },
+        },
+      },
+      { $skip: 0 },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "targetId",
+          foreignField: "_id",
+          as: "target",
+        },
+      },
+      { $unwind: "$target" },
+      {
+        $lookup: {
+          from: "messages",
+          localField: "target._id",
+          foreignField: "senderId",
+          as: "messages",
+        },
+      },
+      {
+        $unwind: "$messages",
+      },
+      {
+        $sort: { "messages.createdAt": -1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          messages: 1,
+        },
+      },
+    ]);
+  }
 }

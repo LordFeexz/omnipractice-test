@@ -1,5 +1,4 @@
 import {
-  SubscribeMessage,
   WebSocketGateway,
   type OnGatewayConnection,
   type OnGatewayDisconnect,
@@ -10,8 +9,7 @@ import { Socket, Server } from 'socket.io';
 import jwt from '../../utils/jwt';
 import { UserService } from '../user/user.service';
 import { Types } from 'mongoose';
-import { UserDocument } from '../../models/user.schema';
-import { Message, MessageDocument } from '../../models/message.schema';
+import { MessageDocument } from '../../models/message.schema';
 import { config } from 'dotenv';
 import { MessageService } from './message.service';
 
@@ -32,10 +30,9 @@ export class MessageGateway
 
   @WebSocketServer()
   private server: Server;
-  private onlineUser = new Set<UserDocument>();
+  private onlineUser = new Set<string>();
 
   async handleConnection(client: Socket, ...args: any[]) {
-    console.log(client);
     const token = client.handshake.headers['authorization'];
     if (!token) client.disconnect();
 
@@ -46,12 +43,15 @@ export class MessageGateway
       return;
     }
 
-    this.onlineUser.add(user);
-    const friendList = await this.messageService.getFriendList(user._id);
+    this.onlineUser.add(user._id.toString());
+    this.getOnlineUser(await this.getFriendList(user._id));
+  }
+
+  private async getFriendList(id: Types.ObjectId) {
+    const friendList = await this.messageService.getFriendList(id);
     const list = friendList.map((el) => el._id);
-    this.getOnlineUser(
-      Array.from(this.onlineUser).filter(({ _id }) => list.includes(_id)),
-    );
+
+    return Array.from(this.onlineUser).filter((_id) => list.includes(_id));
   }
 
   async handleDisconnect(client: Socket) {
@@ -63,27 +63,17 @@ export class MessageGateway
 
     const { _id } = jwt.verifyToken(token as string);
     this.onlineUser.forEach((el) => {
-      if (_id.toString() === el._id.toString()) this.onlineUser.delete(el);
+      if (_id.toString() === el) this.onlineUser.delete(el);
     });
     client.disconnect();
   }
 
-  private getOnlineUser(userLists: UserDocument[]) {
+  private getOnlineUser(userLists: string[]) {
     this.server.emit('user-online', userLists);
   }
 
-  @SubscribeMessage('chat')
-  public handleMessage(client: Socket, payload: Message) {
-    const token = client.handshake.headers['authorization'];
-    if (!token) {
-      client.disconnect();
-      return;
-    }
-    jwt.verifyToken(token as string);
-    return payload;
-  }
-
-  public publishMessage(message: MessageDocument) {
-    return this.server.emit('message', message);
+  public async publishMessage(message: MessageDocument, id: Types.ObjectId) {
+    const list = (await this.getFriendList(id)).map((el) => el.toString());
+    return list.length ? this.server.to(list).emit('message', message) : false;
   }
 }

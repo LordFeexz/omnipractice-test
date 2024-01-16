@@ -33,4 +33,8 @@ export class MessageService {
       (await this.followService.getUserFollower(_id)).map((el) => el.userId)
     );
   }
+
+  public async getMessages(ids: Types.ObjectId[]) {
+    return await this.followService.getFollowedMessages(ids);
+  }
 }
